@@ -366,16 +366,13 @@ USTATUS FfsParser::parseIntelImage(const UByteArray & intelImage, const UINT32 l
     }
 
     // IPSE region
-    UINT32 ipseMinLen = 0x600000; // eyeballed (actually observed was 0x6CE000)
     REGION_INFO ipse;
     ipse.type = Subtypes::IpseRegion;
     ipse.offset = me.offset + me.length;
     ipse.length = 0;
-    // check if space after ME is large enough for IPSE
-    if (regionSection->MeLimit && regionSection->BiosLimit &&
-        calculateRegionOffset(regionSection->BiosBase) > ipse.offset + ipseMinLen &&
-        uniformByte(intelImage.mid(ipse.offset, ipseMinLen)) == UINT32_MAX) {
-	ipse.length = calculateRegionOffset(regionSection->BiosBase) - ipse.offset;
+    if (regionSection->IeLimit) {
+	ipse.offset = calculateRegionOffset(regionSection->IeBase);
+	ipse.length = calculateRegionSize(regionSection->IeBase, regionSection->IeLimit);
 
         if (ipse.offset + ipse.length < ipse.offset) {
             return U_INVALID_FLASH_DESCRIPTOR;
